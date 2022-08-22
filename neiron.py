@@ -1,27 +1,16 @@
 from tkinter import *
-from PIL import ImageGrab
 import time
 import random
 
-def get_color(coordX, coordY):
-    x=canvas.winfo_rootx()+coordX
-    y = canvas.winfo_rooty()+coordY
-    # x, y = cnvs.winfo_pointerx(), cnvs.winfo_pointery()
-    image = ImageGrab.grab((x, y, x+1, y+1)) # 1 pixel image
-    return image.getpixel((0, 0))
+finishX = 240
+finishY = 30
 
-#def CreateAll():
-   # canvas.create_line(130, 290, 130, 150,width=2)
-   # canvas.create_line(170, 290, 170, 150,width=2)
-   # canvas.create_line(0,110,290,110,width=2)
-    #canvas.create_line(0,150, 130, 150,width=2)
-    #canvas.create_line(170, 150, 250, 150,width=2)
-    #canvas.create_line(1,110,1,150,width=2)
-    #canvas.create_line(290, 110, 290,250,width=2 )
-    #canvas.create_line(250, 150, 250, 250, width=2)
-    #canvas.create_line(130,290,170,290, width=2)
-
-
+def ClearAll():
+    with open("ProgramsFinal.txt", "w", encoding="UTF-8") as file:
+        file.close()
+    with open("points.txt", "w", encoding="UTF-8") as file:
+        file.write("0")
+        file.close()
 def Loop():
     global points, programs, programsFinal, firstStart, pointsOld, xFinish1,xFinish2,yFinish2,yFinish
     firstStart = True
@@ -38,30 +27,29 @@ def Loop():
                     programsFinal.clear()
                     for s in programs:
                         programsFinal.append(s)
-                    print(programsFinal)
                     with open("ProgramsFinal.txt", "w", encoding="UTF-8") as file:
                         for p in programsFinal:
                             file.write(p +"\n")
                 break
         elif canvas.coords(player)[0] <=0 :
-            points -= 10
-            canvas.move(player, 5,0)
+            points -= 100
+
         elif canvas.coords(player)[2] >=300:
-            points -= 10
-            canvas.move(player, -5, 0)
+            points -= 100
+
         elif canvas.coords(player)[1] >=300:
-            points -=10
-            canvas.move(player, 0, -5)
+            points -=100
+
         elif canvas.coords(player)[3] <=0:
-            points -=10
-            canvas.move(player, 0, 5)
+            points -=100
+
         #xFinish1-=1
         #xFinish2-=1
         canvas.coords(finish, xFinish1, yFinish, xFinish2, yFinish2)
         root.update()
-        time.sleep(0.05)
+        if learningInt.get() == 0:
+            time.sleep(0.05)
         points -= 1
-        #print(int(points))
     points = 1000
     #xFinish1 = 250
     #xFinish2 = 270
@@ -95,9 +83,11 @@ def doNext(i, player):
     elif programs[i] == "left":
         canvas.move(player, -7,0)
     num = random.randint(1,5)
+    if demonstrationInt.get() == 1:
+        num = 6
     if len(programsFinal) <= i+1:
         num = 5
-    if num % 6 == 0:
+    if num % 5 == 0:
         p = random.randint(0, 3)
         if p == 0:
             programs.insert(i+1, "forward")
@@ -125,22 +115,52 @@ def binds(event):
         canvas.move(player, -7, 0)
         programs.append("left")
 
+
+
 root = Tk()
 root.geometry("300x300")
 root.title("Супер лабиринт")
 root.resizable(width=False, height=False)
 
-canvas = Canvas(root, height=300, width=300, bg="whitesmoke",highlightthickness=0)
+demonstrationInt = IntVar()
+learningInt = IntVar()
+
+settings = LabelFrame(root, height=30)
+demonstrTk = Checkbutton(settings, text="Демонстрация",  font=('Arial',10,'bold'),
+                     bg='whitesmoke', variable=demonstrationInt, onvalue=1,offvalue=0)
+
+
+learningTk = Checkbutton(settings, text="Обучение",  font=('Arial',10,'bold'),
+                     bg='whitesmoke', variable=learningInt, onvalue=1,offvalue=0)
+
+clearBtn = Button(settings, text="Очистить", font=('Arial',10,'bold'),
+                     bg='whitesmoke', command=ClearAll)
+
+demonstrTk.pack(side=LEFT)
+learningTk.pack(side=LEFT)
+clearBtn.pack(side=LEFT)
+
+settings.pack(anchor=W)
+
+demonstrTk.pack()
+canvas = Canvas(root, height=270, width=300, bg="whitesmoke",highlightthickness=0)
 canvas.pack()
 
-xFinish1 = 80
-xFinish2 = 100
-yFinish = 250
-yFinish2 = 270
+xFinish1 = finishX - 20
+xFinish2 = finishX + 20
+yFinish = finishY - 20
+yFinish2 = finishY + 20
 points = 1000
 pointsOld = 0
 programs = []
 programsFinal = []
+try:
+    open("ProgramsFinal.txt", "x", encoding="UTF-8")
+    file = open("points.txt", "x", encoding="UTF-8")
+    file.write("0")
+except FileExistsError:
+    e = 1
+
 with open("ProgramsFinal.txt", "r", encoding="UTF-8") as file:
     listProgrmas = file.readlines()
     for p in listProgrmas:
@@ -149,7 +169,7 @@ with open("points.txt","r", encoding="UTF-8") as file:
     pointsOld = int(file.readline())
 
 
-player = canvas.create_rectangle(145, 270, 155,280, fill="green")
+player = canvas.create_rectangle(145, 230, 155,240, fill="green")
 
 finish = canvas.create_rectangle(xFinish1,yFinish,xFinish2,yFinish2,fill="gold", width=5, outline="gold")
 
